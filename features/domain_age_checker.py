@@ -1,27 +1,25 @@
 import whois
 import datetime
 import streamlit as st
+from urllib.parse import urlparse
 
 def domain_age_checker():
-    st.title("🌐 Domain Age Checker")
+    st.subheader("🌐 Domain Age Checker")
+    url = st.text_input("Enter the domain or URL to check its age:")
 
-    # Get user input for domain
-    domain = st.text_input("Enter the domain to check its age:")
-
-    if domain:
+    if st.button("Check Domain Age"):
         try:
-            # Get WHOIS info for the domain
+            # Extract only the domain part if full URL is given
+            domain = urlparse(url).netloc or url
+            domain = domain.replace("www.", "")  # remove www if present
+
             domain_info = whois.whois(domain)
             creation_date = domain_info.creation_date
 
-            # Handle the case when creation_date is a list
             if isinstance(creation_date, list):
                 creation_date = creation_date[0]
 
-            # Calculate the domain age in years
             age = (datetime.datetime.now() - creation_date).days // 365
-            st.success(f"The domain **{domain}** is **{age}** years old. 🎉")
+            st.success(f"The domain **{domain}** is {age} years old. 🎉")
         except Exception as e:
-            st.error(f"Error retrieving information for domain **{domain}**: {str(e)}")
-    else:
-        st.info("Please enter a domain to check its age.")
+            st.error(f"Error retrieving information for domain {url}: {str(e)}")
